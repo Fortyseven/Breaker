@@ -97,7 +97,7 @@ def process_element(e, level):
         out += ')' if len(coded_classes) else ''
 
     # data attributes
-    if config.show_data:
+    if not config.no_data:
         data_attribs = []
         for k in e.keys():
             if k[:5] == 'data-':
@@ -166,8 +166,8 @@ def main():
                         help='Double indent size each level',
                         action='store_true'
                         )
-    parser.add_argument('--show-data',
-                        help='Show data* attributes',
+    parser.add_argument('--no-data',
+                        help='Hide data* attributes',
                         action='store_true'
                         )
     parser.add_argument('--only-comments',
