@@ -132,7 +132,7 @@ def main():
     global config
 
     parser = argparse.ArgumentParser(
-        description='HTML layout analysis'
+        description='A tool to help with HTML layout analysis and visualization'
     )
 
     parser.add_argument('infile',
