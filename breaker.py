@@ -8,7 +8,7 @@ from lxml import etree
 from termcolor import colored
 
 COLORS = [
-    # 'grey',
+    # 'grey',  # Shows up as 'black' in some terminals, but go for it if you want
     'red',
     'green',
     'yellow',
