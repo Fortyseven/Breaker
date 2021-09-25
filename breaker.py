@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+"""
+Breaker - a tool to help visualize cluttered HTML layouts.
+"""
 import argparse
 import sys
 from lxml import etree
@@ -21,7 +23,9 @@ config = {}
 class_instances = {}
 class_instance_color_ptr = 0
 
+##############################################################################
 def process_element(e, level):
+    """Processes a single DOM element"""
     global class_instance_color_ptr, class_instances
 
     out = ''
@@ -111,8 +115,9 @@ def process_element(e, level):
     else:
         return out
 
-
+##############################################################################
 def dump_branch(el, level=0):
+    """Recursively iterates through the DOM"""
     if el is None:
         return
 
@@ -127,7 +132,7 @@ def dump_branch(el, level=0):
         if len(e) > 0:
             dump_branch(e, level=level + 1)
 
-
+##############################################################################
 def main():
     global config
 
