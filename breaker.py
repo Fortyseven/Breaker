@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# import requests
 import argparse
+import sys
 from lxml import etree
 from termcolor import colored
 
@@ -97,7 +97,7 @@ def process_element(e, level):
                                   'green', attrs=['bold']) + '}'
 
     # inner text
-    if not config.hide_text:
+    if not config.no_text:
         if e.text and e.text.strip():
             out += ' ' + colored(
                 e.text.strip()[:10] + '...',
@@ -113,8 +113,11 @@ def process_element(e, level):
 
 
 def dump_branch(el, level=0):
+    if el is None:
+        return
+
     for e in el:
-        if config.skip_head and e.tag == 'head':
+        if config.no_head and e.tag == 'head':
             continue
         else:
             out = process_element(e, level)
@@ -125,15 +128,20 @@ def dump_branch(el, level=0):
             dump_branch(e, level=level + 1)
 
 
-if __name__ == '__main__':
+def main():
+    global config
+
     parser = argparse.ArgumentParser(
         description='HTML layout analysis'
     )
 
-    parser.add_argument('html_file',
-                        help='HTML file',
-                        type=str
+    parser.add_argument('infile',
+                        nargs='?',
+                        help='HTML file, or use `-` for stdin',
+                        type=argparse.FileType('r'),
+                        default=sys.stdin
                         )
+
     parser.add_argument('--skip-empty-tags',
                         help='Skip empty tags',
                         action='store_true'
@@ -155,25 +163,32 @@ if __name__ == '__main__':
                         help='Only show comments',
                         action='store_true'
                         )
-    parser.add_argument('--skip-head',
-                        help='Only show comments',
+    parser.add_argument('--no-head',
+                        help='Skip processing <head> tag',
                         action='store_true'
                         )
-    parser.add_argument('--hide-text',
+    parser.add_argument('--no-text',
                         help='Hide text snippet',
                         action='store_true'
                         )
 
     args = parser.parse_args()
-
     config = args
 
-    infile = args.html_file
+    file_in = args.infile
+    html_input = ""
 
-    with open(infile, 'r') as f:
-        parsed = etree.fromstring(
-            f.read(),
-            parser=etree.HTMLParser(recover=True)
-        )
+    with file_in as f:
+        for line in f:
+            html_input += line
+
+    parsed = etree.fromstring(
+        html_input,
+        parser=etree.HTMLParser(recover=True)
+    )
 
     dump_branch(parsed)
+
+
+if __name__ == '__main__':
+    main()
