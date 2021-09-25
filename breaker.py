@@ -26,6 +26,21 @@ EXTERN_COLORS = {
     ".css":     "magenta"
 }
 
+SKIP_EXTERNS = [
+    "data:",
+    ".opus",
+    ".ogg",
+    ".oga",
+    ".jpg",
+    ".png",
+    ".jpeg",
+    ".avi",
+    ".mov",
+    ".mp4",
+    ".mp3",
+    ".webp",
+]
+
 config = {}
 
 class_instances = {}
@@ -157,17 +172,21 @@ def process_element(e, level):
     out += _process_data_attribs(e)
     out += _process_inner_text(e)
 
-    # if (e.tag == 'script'):
-    # print(e.keys())
+    # grab external references
+
     if "href" in e.keys():
-        src = e.attrib['href']
-        if len(src) > 1 and not src in externs:
-            externs.append(src)
+        href = e.attrib['href']
+        if not any(x in href.lower() for x in SKIP_EXTERNS):
+            if len(href) > 1 and \
+                href[0] != '#' and \
+                not href in externs:
+                    externs.append(href)
 
     if "src" in e.keys():
         src = e.attrib['src']
-        if len(src) > 1 and not src in externs:
-            externs.append(src)
+        if not any(x in src.lower() for x in SKIP_EXTERNS):
+            if len(src) > 1 and not src in externs:
+                externs.append(src)
 
     is_empty = not e.text or e.text.strip() == ''
 
