@@ -88,6 +88,7 @@ def _process_data_attribs(e):
                                 'green', attrs=['bold']) + '}'
     return ""
 
+##############################################################################
 def _process_inner_text(e):
     if not config.no_text:
         if e.text and e.text.strip():
