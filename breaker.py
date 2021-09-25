@@ -24,6 +24,21 @@ class_instances = {}
 class_instance_color_ptr = 0
 
 ##############################################################################
+def _process_indentation(level):
+    indent_char = '-'
+
+    indent = config.indent_size
+
+    if config.indent_doubling:
+        indent *= int(level / 2)
+
+    return colored(
+        indent_char * (level * indent) + "|",
+        COLORS[level % len(COLORS)]
+    )
+
+
+##############################################################################
 def process_element(e, level):
     """Processes a single DOM element"""
     global class_instance_color_ptr, class_instances
@@ -44,17 +59,8 @@ def process_element(e, level):
         return None
 
     # indentation
-    indent_char = '-'
 
-    indent = config.indent_size
-
-    if config.indent_doubling:
-        indent *= int(level / 2)
-
-    out += colored(
-        indent_char * (level * indent) + "|",
-        COLORS[level % len(COLORS)]
-    )
+    out += _process_indentation(level)
 
     if is_comment:
         return out + colored(e.text, 'white', 'on_red', attrs=['bold'])
