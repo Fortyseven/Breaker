@@ -3,7 +3,7 @@
 Breaker - a tool to help visualize cluttered HTML layouts.
 """
 import argparse
-import sys, os
+import sys, os, re
 from lxml import etree
 from termcolor import colored
 
@@ -22,6 +22,8 @@ config = {}
 
 class_instances = {}
 class_instance_color_ptr = 0
+previous_out = ""
+skip_count = 0
 
 ##############################################################################
 def _process_indentation(level):
@@ -98,8 +100,19 @@ def _process_inner_text(e):
     return ''
 
 ##############################################################################
+def _reset_skip(indent, out):
+    global previous_out, skip_count
+    previous_out = ""
+    skipped = skip_count
+    skip_count = 0
+
+    return indent + ("...skipped %d...\n" % skipped) + out
+
+
+##############################################################################
 def process_element(e, level):
     """Processes a single DOM element"""
+    global previous_out, skip_count
 
     out = ''
     comment = None
@@ -116,11 +129,15 @@ def process_element(e, level):
             return colored(comment, 'green')
         return None
 
-    out += _process_indentation(level)
+    indent = _process_indentation(level) # for skip
+    out += indent
 
     # comments need no further processing, so push it out
     if is_comment:
-        return out + colored(e.text, 'white', 'on_red', attrs=['bold'])
+        out += colored(e.text, 'white', 'on_red', attrs=['bold'])
+        if (skip_count > 0):
+            return _reset_skip(indent, out)
+        return out
 
     # otherwise, party as usual...
     out += _process_tag(e)
@@ -133,8 +150,17 @@ def process_element(e, level):
 
     if config.skip_empty_tags and is_empty:
         return None
-    else:
-        return out
+
+    if (out == previous_out):
+        skip_count += 1
+        return None
+
+    previous_out = out
+
+    if (skip_count > 0):
+        return _reset_skip(indent, out)
+
+    return out
 
 ##############################################################################
 def dump_branch(el, level=0):
