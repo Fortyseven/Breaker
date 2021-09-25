@@ -37,11 +37,69 @@ def _process_indentation(level):
         COLORS[level % len(COLORS)]
     )
 
+##############################################################################
+def _process_tag(e):
+    if (e.tag):
+        tag = colored(e.tag.upper(), 'white', attrs=['bold'])
+        return tag
+    return ''
+
+##############################################################################
+def _process_id(e):
+    id_ = e.get('id') or ''
+    return colored('#%s' % id_ if id_ else '',
+                    'red', 'on_grey', attrs=['bold'])
+
+##############################################################################
+def _process_classes(e):
+    global class_instance_color_ptr, class_instances
+    classes = e.get('class').split() if 'class' in e.keys() else ''
+    classes = list(map(lambda i: '.' + i, list(classes)))
+
+    out = ""
+
+    if len(classes):
+        coded_classes = []
+        for class_ in classes:
+            if not class_ in class_instances:
+                class_instances[class_] = class_instance_color_ptr % len(
+                    COLORS)
+                class_instance_color_ptr += 1
+
+            coded_classes.append(
+                colored(class_, COLORS[class_instances[class_]])
+            )
+
+        out += ' (' if len(coded_classes) else ''
+        out += ''.join(coded_classes)
+        out += ')' if len(coded_classes) else ''
+
+    return out
+
+##############################################################################
+def _process_data_attribs(e):
+    if not config.no_data:
+        data_attribs = []
+        for k in e.keys():
+            if k[:5] == 'data-':
+                data_attribs.append('%s=\'%s\'' % (k, e.get(k)))
+        if len(data_attribs):
+            return ' {' + colored(', '.join(data_attribs),
+                                'green', attrs=['bold']) + '}'
+    return ""
+
+def _process_inner_text(e):
+    if not config.no_text:
+        if e.text and e.text.strip():
+            return ' ' + colored(
+                e.text.strip()[:10] + '...',
+                attrs=['reverse']
+            )
+    return ''
 
 ##############################################################################
 def process_element(e, level):
     """Processes a single DOM element"""
-    global class_instance_color_ptr, class_instances
 
     out = ''
     comment = None
@@ -58,61 +116,18 @@ def process_element(e, level):
             return colored(comment, 'green')
         return None
 
-    # indentation
-
     out += _process_indentation(level)
 
+    # comments need no further processing, so push it out
     if is_comment:
         return out + colored(e.text, 'white', 'on_red', attrs=['bold'])
 
-    # tag
-    tag = colored(e.tag.upper(), 'white', attrs=['bold'])
-    if (tag):
-        out += tag
-
-    # id
-    id_ = e.get('id') or ''
-    out += colored('#%s' % id_ if id_ else '',
-                   'red', 'on_grey', attrs=['bold'])
-
-    # classes
-    classes = e.get('class').split() if 'class' in e.keys() else ''
-    classes = list(map(lambda i: '.' + i, list(classes)))
-
-    if len(classes):
-        coded_classes = []
-
-        for class_ in classes:
-            if not class_ in class_instances:
-                class_instances[class_] = class_instance_color_ptr % len(
-                    COLORS)
-                class_instance_color_ptr += 1
-
-            coded_classes.append(
-                colored(class_, COLORS[class_instances[class_]])
-            )
-
-        out += ' (' if len(coded_classes) else ''
-        out += ''.join(coded_classes)
-        out += ')' if len(coded_classes) else ''
-
-    # data attributes
-    if not config.no_data:
-        data_attribs = []
-        for k in e.keys():
-            if k[:5] == 'data-':
-                data_attribs.append('%s=\'%s\'' % (k, e.get(k)))
-        if len(data_attribs):
-            out += ' {' + colored(', '.join(data_attribs),
-                                  'green', attrs=['bold']) + '}'
-
-    # inner text
-    if not config.no_text:
-        if e.text and e.text.strip():
-            out += ' ' + colored(
-                e.text.strip()[:10] + '...',
-                attrs=['reverse']
-            )
+    # otherwise, party as usual...
+    out += _process_tag(e)
+    out += _process_id(e)
+    out += _process_classes(e)
+    out += _process_data_attribs(e)
+    out += _process_inner_text(e)
 
     is_empty = not e.text or e.text.strip() == ''
 
