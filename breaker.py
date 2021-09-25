@@ -92,10 +92,9 @@ def _process_data_attribs(e):
 def _process_inner_text(e):
     if not config.no_text:
         if e.text and e.text.strip():
-            return ' ' + colored(
-                e.text.strip()[:10] + '...',
-                attrs=['reverse']
-            )
+            scrub = e.text[:10]
+            scrub = re.sub(r'\s', ' ', scrub).strip()
+            return ' ' + colored( scrub + '...', attrs=['reverse'])
     return ''
 
 ##############################################################################
