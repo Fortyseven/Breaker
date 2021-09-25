@@ -52,7 +52,7 @@ def process_element(e, level):
         indent *= int(level / 2)
 
     out += colored(
-        indent_char * (level * indent),
+        indent_char * (level * indent) + "|",
         COLORS[level % len(COLORS)]
     )
 
