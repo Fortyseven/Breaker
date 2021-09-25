@@ -3,7 +3,7 @@
 Breaker - a tool to help visualize cluttered HTML layouts.
 """
 import argparse
-import sys
+import sys, os
 from lxml import etree
 from termcolor import colored
 
@@ -176,9 +176,16 @@ def main():
                         help='Hide text snippet',
                         action='store_true'
                         )
+    parser.add_argument('--no-color',
+                        help='Disable colors',
+                        action='store_true'
+                        )
 
     args = parser.parse_args()
     config = args
+
+    if args.no_color:
+        os.environ['ANSI_COLORS_DISABLED'] = "1"
 
     file_in = args.infile
     html_input = ""
