@@ -23,6 +23,7 @@ config = {}
 class_instances = {}
 class_instance_color_ptr = 0
 previous_out = ""
+previous_indent = ""
 skip_count = 0
 
 ##############################################################################
@@ -100,19 +101,19 @@ def _process_inner_text(e):
     return ''
 
 ##############################################################################
-def _reset_skip(indent, out):
-    global previous_out, skip_count
+def _reset_skip(out):
+    global previous_out, skip_count, previous_indent
     previous_out = ""
     skipped = skip_count
     skip_count = 0
 
-    return indent + ("...skipped %d...\n" % skipped) + out
+    return previous_indent + ("...skipped %d...\n" % skipped) + out
 
 
 ##############################################################################
 def process_element(e, level):
     """Processes a single DOM element"""
-    global previous_out, skip_count
+    global previous_out, skip_count, previous_indent
 
     out = ''
     comment = None
@@ -136,7 +137,7 @@ def process_element(e, level):
     if is_comment:
         out += colored(e.text, 'white', 'on_red', attrs=['bold'])
         if (skip_count > 0):
-            return _reset_skip(indent, out)
+            return _reset_skip(out)
         return out
 
     # otherwise, party as usual...
@@ -155,10 +156,11 @@ def process_element(e, level):
         skip_count += 1
         return None
 
-    previous_out = out
-
     if (skip_count > 0):
-        return _reset_skip(indent, out)
+        return _reset_skip(out)
+
+    previous_out = out
+    previous_indent = indent
 
     return out
 
