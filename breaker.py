@@ -18,6 +18,14 @@ COLORS = [
     'white'
 ]
 
+EXTERN_COLORS = {
+    "mailto:":  "blue",
+    "https:":   "yellow",
+    "http:":    "red",
+    ".js":      "white",
+    ".css":     "magenta"
+}
+
 config = {}
 
 class_instances = {}
@@ -25,6 +33,8 @@ class_instance_color_ptr = 0
 previous_out = ""
 previous_indent = ""
 skip_count = 0
+
+externs = []
 
 ##############################################################################
 def _process_indentation(level):
@@ -113,7 +123,7 @@ def _reset_skip(out):
 ##############################################################################
 def process_element(e, level):
     """Processes a single DOM element"""
-    global previous_out, skip_count, previous_indent
+    global previous_out, skip_count, previous_indent, externs
 
     out = ''
     comment = None
@@ -146,6 +156,18 @@ def process_element(e, level):
     out += _process_classes(e)
     out += _process_data_attribs(e)
     out += _process_inner_text(e)
+
+    # if (e.tag == 'script'):
+    # print(e.keys())
+    if "href" in e.keys():
+        src = e.attrib['href']
+        if len(src) > 1 and not src in externs:
+            externs.append(src)
+
+    if "src" in e.keys():
+        src = e.attrib['src']
+        if len(src) > 1 and not src in externs:
+            externs.append(src)
 
     is_empty = not e.text or e.text.strip() == ''
 
@@ -183,7 +205,7 @@ def dump_branch(el, level=0):
 
 ##############################################################################
 def main():
-    global config
+    global config, scripts, externs
 
     parser = argparse.ArgumentParser(
         description='A tool to help with HTML layout analysis and visualization'
@@ -250,6 +272,18 @@ def main():
 
     dump_branch(parsed)
 
+    if len(externs):
+        externs.sort()
+        print("\nReferences:\n")
+        for link in externs:
+            out = link
+
+            for k,v in EXTERN_COLORS.items():
+                if k in link:
+                    out = colored(link, v, attrs=['bold'])
+                    break
+
+            print("- %s" % out)
 
 if __name__ == '__main__':
     main()
