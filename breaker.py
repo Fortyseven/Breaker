@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Breaker - a tool to help visualize cluttered HTML layouts.
 """
