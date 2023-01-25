@@ -43,5 +43,5 @@ Feel free to drop suggestions, or report bugs in the issues section.
 
 
 ---
-Fortyseven (https://Network47.xyz)
+Fortyseven (https://Network47.org)
 2021-09-25
